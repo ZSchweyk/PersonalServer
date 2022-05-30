@@ -8,7 +8,7 @@
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
-        <a class="navbar-brand">Conference Sand Table</a>
+        <a class="navbar-brand">Schweyk Server</a>
 <!--        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">-->
 <!--            <span class="navbar-toggler-icon"></span>-->
 <!--        </button>-->
@@ -19,21 +19,10 @@
                     <a class="nav-link" href="{{ url_for('home', user_flast=session['flast']) }}">Home</a>
                 </li>
 
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('stop_drawing', user_flast=session['flast']) }}">STOP DRAWING</a>
-                </li>
-
-<!--                <li class="nav-item">-->
-<!--                    <a class="nav-link" href="{{ url_for('equations', user_flast=session['flast']) }}">Equations</a>-->
-<!--                </li>-->
-
 <!--                <li class="nav-item">-->
 <!--                    <a class="nav-link" href="{{ url_for('profile', user_flast=session['flast']) }}">Profile</a>-->
 <!--                </li>-->
 
-<!--                <li class="nav-item">-->
-<!--                    <a class="nav-link" href="{{ url_for('restart', user_flast=session['flast']) }}">Restart</a>-->
-<!--                </li>-->
 
             </ul>
             <form class="d-flex" action="{{ url_for('logout', user_flast=session['flast']) }}">

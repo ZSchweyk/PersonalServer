@@ -141,8 +141,6 @@ def home(user_flast):
 
 
 
-
-
 @app.route("/<user_flast>/logout")
 def logout(user_flast):
     # clear the users cookies, specifically their id and flast.
