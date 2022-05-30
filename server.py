@@ -13,6 +13,7 @@ from werkzeug.urls import url_encode
 
 
 from flask_forms import *
+from user_class import User
 
 app = Flask(__name__)
 app.secret_key = "my super secret key that no one is supposed to know"
@@ -121,15 +122,22 @@ def home(user_flast):
     if "user_id" in session:
         # retrieve the user object who's id matches what's in the session
         user = Users.query.filter_by(id=session["user_id"]).first()
-        # find all row objects in the Equations table belonging to that user
+        user_tree = User(user.email)
+        directory = user_tree.directory
 
         return render_template(
             'home.html',
             user=user,
+            directory=directory,
         )
     else:  # if the user is not in the session
         return redirect(url_for("login"))  # redirect the user to the login page
 
+
+
+@app.route("/<user_flast>/files")
+def enter_folder(user_flast):
+    pass
 
 
 @app.route("/<user_flast>/logout")

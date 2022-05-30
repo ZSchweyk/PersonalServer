@@ -18,6 +18,29 @@
 
     <h1>Welcome, {{ user.first_name }} {{ user.last_name }}!</h1>
 
+    <ul>
+        <li>a</li>
+        <li>b</li>
+        <li>c</li>
+        {% for item in directory.get_children()["folders"] %}
+
+            <li>
+                <a href="{{ url_for('enter_folder', user_flast=session['flast']) }}">{{ item }}</a>
+            </li>
+
+        {% endfor %}
+
+        {% for item in directory.get_children()["files"] %}
+
+            <li>
+                <a href="#">{{ item }}</a>
+            </li>
+
+        {% endfor %}
+    </ul>
+
+
+
 {% endblock %}
 
 
