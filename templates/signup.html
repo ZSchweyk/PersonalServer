@@ -10,7 +10,7 @@
 	<title>DPEA Conference Sand Table</title>
 
 <!--	<link rel="canonical" href="https://getbootstrap.com/docs/5.1/examples/sign-in/">-->
-	<link rel="icon" href="{{ url_for('static', filename='images/dpea_logo.dpg') }}" type="image/icon type">
+	<link rel="icon" href="{{ url_for('static', filename='images/server.dpg') }}" type="image/icon type">
 
 
 
@@ -53,7 +53,7 @@
 
 
 	<main class="form-signin">
-		<img class="mb-4" src="{{ url_for('static', filename='images/dpea_logo.jpg') }}" alt="DPEA Logo" width="200"
+		<img class="mb-4" src="{{ url_for('static', filename='images/server.jpg') }}" alt="DPEA Logo" width="200"
 			 height="200">
 
 		<form action="{{ url_for('signup') }}" method="post">
@@ -66,7 +66,7 @@
 			{% endfor %}
 
 			<h1 class="h2 mb-3 fw-normal">Create an Account</h1>
-			<h2 class="h4 mb-3 fw-normal">The Conference Sand Table</h2>
+			<h2 class="h4 mb-3 fw-normal">Schweyk Cloud</h2>
 			<h6 class="h6 mb-3 fw-normal">or <a href="{{ url_for('login') }}">Login</a></h6>
 
 			{{ form.hidden_tag() }}
