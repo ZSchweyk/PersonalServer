@@ -24,19 +24,6 @@ class Users(db.Model):
         return "<Name %r>" % (self.first_name + " " + self.last_name)
 
 
-# Create the Equations table
-class Equations(db.Model):
-    row = db.Column(db.Integer, primary_key=True, autoincrement=True, nullable=False)
-    id = db.Column(db.Integer, nullable=False)
-    equation = db.Column(db.String(100), nullable=False)
-    date_added = db.Column(db.DateTime, default=datetime.now)  # 2022-03-21 13:46:34.242217 %Y-%m-%d %H:%M:%S.%f
-
-    def __init__(self, user_id, equation):
-        self.id = user_id
-        self.equation = equation
-
-    def __repr__(self):
-        return "<Equation %r>" % self.equation
 
 
 

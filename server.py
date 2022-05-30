@@ -30,12 +30,16 @@ from models import *  # models imports db above, explaining why I have this impo
 @app.route("/", methods=["POST", "GET"])
 def login():
     form = LoginForm()  # render the login form
+    print("Created login form")
     if form.validate_on_submit():  # if all form data is valid on submit...
+        print("Valid form was submitted")
         # get the user object/row from the db whose email matches whatever was submitted
         user = Users.query.filter_by(email=form.email.data.lower()).first()
+        print("Found user")
 
         # if the user exists in the db, and the salt + input password matches what's stored in the db, log them in
         if user is not None and sha256(user.salt + form.password.data) == user.salted_password_hash:
+            print("Correct credentials")
             # Log the user in
 
             # make the session permanent; erase session/cookies after app.permanent_session_lifetime, defined above
@@ -47,6 +51,7 @@ def login():
             # GitHub's convention/style, which I really like.
             session["flast"] = user.first_name[0].upper() + user.last_name[0].upper() + user.last_name[1:].lower()
             # redirect the user to the home page, and pass in their flast into the url
+            print("Redirecting to home page")
             return redirect(url_for("home", user_flast=session["flast"]))
         else:
             # Wrong password, but I flash incorrect credentials to make them think that it also could be an incorrect
@@ -59,12 +64,15 @@ def login():
             # render the login page again, because they entered incorrect credentials
             return render_template("login.html", form=form)
     else:
+        print("Data entered wasn't valid")
         # if the user is saved in the session/cookie, automatically redirect them to the home page, instead of manually
         # making them login again
         if "user" in session:
+            print("User is in session")
             # as stated above, redirect them to the home page; this essentially "logs them in"
             return redirect(url_for("home", user_flast=session["flast"]))
         # render the login page again
+        print("User is not in session")
         return render_template("login.html", form=form)
 
 
@@ -117,140 +125,22 @@ def signup():
 
 @app.route("/<user_flast>/home", methods=["POST", "GET"])
 def home(user_flast):
+    print("Entered home function")
     # if the user already exists in the session dictionary...the user manually types in ipaddr:5000/FLast/home
     if "user_id" in session:
-        form = EquationForm()  # render the equations form
         # retrieve the user object who's id matches what's in the session
         user = Users.query.filter_by(id=session["user_id"]).first()
         # find all row objects in the Equations table belonging to that user
-        rows = Equations.query.filter_by(id=session["user_id"]).all()
-        equations = [row.equation for row in rows]  # obtain a list of the pure equations
-        if form.validate_on_submit():  # if the form is submitted and the data is valid...
-            print("Validated")
-            # create a new equation for that user
-            new_equation = Equations(
-                user_id=session["user_id"],
-                equation=remove_spaces(form.equation.data)
-            )
-            # test if that new equation already exists. if not...
-            if new_equation.equation not in equations:
-                db.session.add(new_equation)  # add that new equation to the db session
-                db.session.commit()  # commit it (permanently modify the db)
-                form.equation.data = ""  # clear the equation field
-                # redirect the user to the same page; home
-                return redirect(url_for("home", user_flast=session["flast"], form=None))
-            else:  # if the new equation DOES exist...
-                flash("Equation already exists.")  # flash an error warning that the equation already exists
-        # if the form is NOT submitted, render the home.html template for the logged in user.
+
         return render_template(
             'home.html',
             user=user,
-            form=form,
-            equations=equations
         )
     else:  # if the user is not in the session
         return redirect(url_for("login"))  # redirect the user to the login page
 
 
-@app.route("/<user_flast>/restart")
-def restart(user_flast):
-    # Reboot client pi, then server pi
-    global table
-    table.server.send_to_radius_client("Reboot Sequence")
-    assert table.server.receive_from_radius_client() == "close server and reboot server pi", "Received packet incorrectly"
-    table.server.close_server()
-    table.server.send_to_radius_client("Reboot")
-    os.system("sudo reboot")
 
-
-@app.template_global()
-def modify_query(**new_values):
-    args = request.args.copy()
-
-    for key, value in new_values.items():
-        args[key] = value
-
-    return '{}?{}'.format(request.path, url_encode(args))
-
-
-@app.route("/<user_flast>/equations", methods=["POST", "GET"])
-def equations(user_flast, eq_num=1):
-
-    if "user_id" in session:
-        form = DrawEquationForm()
-        user_id = session["user_id"]
-        user = Users.query.filter_by(id=user_id).first()
-        args = request.args
-        # the default parameter ensures that if the argument can't be converted into an int, it defaults to 1.
-        eq_num = args.get("eq_num", default=eq_num, type=int)
-
-        # if delete_equation:
-        #     rows = Equations.query.filter_by(id=user.id).all()
-        #     equation = rows[eq_num - 1].equation
-        #     Equations.query.filter_by(id=user.id, equation=equation).delete()
-        #     db.session.commit()
-        #     return redirect(url_for("home", user_flast=session["flast"]))
-
-        if form.validate_on_submit():
-            rows = Equations.query.filter_by(id=user.id).all()
-            equation = rows[eq_num - 1].equation
-
-            # def run_client():
-            #     os.system('sshpass -p dpea7266! ssh pi@conference-sand-table-v2-radius-pi.local "python3 ~/projects/ConferenceSandTable/ClientPi/main.py"')
-            #
-            # Thread(target=run_client).start()
-
-            global table
-            draw_equation(
-                table=table,
-                equation=equation,
-                theta_range=form.theta_max.data * pi,
-                theta_speed=form.theta_speed.data,
-                scale_factor=form.scale_factor.data
-            )
-
-            print("About to redirect back to this page...")
-            return redirect(url_for("equations", user_flast=session["flast"], eq_num=eq_num))
-
-        rows = Equations.query.filter_by(id=user.id).all()
-        if 0 < eq_num <= len(rows):
-            equation = rows[eq_num - 1].equation
-            return render_template("equations.html", user=user, equation=equation, eq_num=eq_num, form=form)
-        return "Please add at least 1 equation"
-    return redirect(url_for("login"))
-
-
-@app.route("/<user_flast>/edit-equation")
-def edit_equation(user_flast):
-    pass
-
-
-# @app.route("/<user_flast>/home/draw-equation")
-# def draw_equation(user_flast):
-#     pass
-
-@app.route("/<user_flast>/home/delete-equation", methods=["POST", "GET"])
-def stop_drawing(user_flast):
-    global table
-    table.ENABLED = False
-    time.sleep(.2)
-    table.ENABLED = True
-    return redirect(url_for("home", user_flast=session["flast"]))
-
-
-@app.route("/<user_flast>/home/delete-equation", methods=["POST", "GET"])
-def delete_equation(user_flast, eq_num=1):
-    if "user_id" in session:
-        user_id = session["user_id"]
-        user = Users.query.filter_by(id=user_id).first()
-        args = request.args
-        # the default parameter ensures that if the argument can't be converted into an int, it defaults to 1.
-        eq_num = args.get("eq_num", default=eq_num, type=int)
-        rows = Equations.query.filter_by(id=user.id).all()
-        equation = rows[eq_num - 1].equation
-        Equations.query.filter_by(id=user.id, equation=equation).delete()
-        db.session.commit()
-        return redirect(url_for("home", user_flast=session["flast"]))
 
 
 @app.route("/<user_flast>/logout")
@@ -284,14 +174,6 @@ def terms_page():
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template("404.html"), 404
-
-
-# def loop(start_string):
-#     previous = start_string
-#     while True:
-#         new = sha256(previous)
-#         print(new)
-#         previous = new
 
 
 if __name__ == '__main__':
