@@ -8,10 +8,11 @@ class Directory:
     def get_children(self):
         return listdir(self.path)
 
-    def new_directory(self, child):
+    def enter(self, child):
         full_path = join(self.path, child)
-        if isdir(full_path):
+        if child in self.get_children() and isdir(full_path):
             return Directory(full_path)
+        raise Exception("Not a directory")
 
     def __str__(self):
         return "Directory(" + self.path + ")"
@@ -21,7 +22,7 @@ class Directory:
 d = Directory("/home/pi/Documents")
 print(d.get_children())
 
-new_d = d.new_directory("Zeyn")
-print(new_d)
-
-print(new_d.get_children())
+# new_d = d.new_directory("Zeyn")
+# print(new_d)
+#
+# print(new_d.get_children())
