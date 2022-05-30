@@ -30,16 +30,12 @@ from models import *  # models imports db above, explaining why I have this impo
 @app.route("/", methods=["POST", "GET"])
 def login():
     form = LoginForm()  # render the login form
-    print("Created login form")
     if form.validate_on_submit():  # if all form data is valid on submit...
-        print("Valid form was submitted")
         # get the user object/row from the db whose email matches whatever was submitted
         user = Users.query.filter_by(email=form.email.data.lower()).first()
-        print("Found user")
 
         # if the user exists in the db, and the salt + input password matches what's stored in the db, log them in
         if user is not None and sha256(user.salt + form.password.data) == user.salted_password_hash:
-            print("Correct credentials")
             # Log the user in
 
             # make the session permanent; erase session/cookies after app.permanent_session_lifetime, defined above
@@ -51,7 +47,6 @@ def login():
             # GitHub's convention/style, which I really like.
             session["flast"] = user.first_name[0].upper() + user.last_name[0].upper() + user.last_name[1:].lower()
             # redirect the user to the home page, and pass in their flast into the url
-            print("Redirecting to home page")
             return redirect(url_for("home", user_flast=session["flast"]))
         else:
             # Wrong password, but I flash incorrect credentials to make them think that it also could be an incorrect
@@ -64,15 +59,12 @@ def login():
             # render the login page again, because they entered incorrect credentials
             return render_template("login.html", form=form)
     else:
-        print("Data entered wasn't valid")
         # if the user is saved in the session/cookie, automatically redirect them to the home page, instead of manually
         # making them login again
         if "user" in session:
-            print("User is in session")
             # as stated above, redirect them to the home page; this essentially "logs them in"
             return redirect(url_for("home", user_flast=session["flast"]))
         # render the login page again
-        print("User is not in session")
         return render_template("login.html", form=form)
 
 
@@ -125,7 +117,6 @@ def signup():
 
 @app.route("/<user_flast>/home", methods=["POST", "GET"])
 def home(user_flast):
-    print("Entered home function")
     # if the user already exists in the session dictionary...the user manually types in ipaddr:5000/FLast/home
     if "user_id" in session:
         # retrieve the user object who's id matches what's in the session
