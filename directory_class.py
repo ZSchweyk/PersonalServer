@@ -6,16 +6,25 @@ class Directory:
         self.path = path
 
     def get_children(self):
-        return listdir(self.path)
+        dict_to_return = {"folders": [], "files": []}
+        for item in listdir(self.path):
+            if isdir(item):
+                dict_to_return["folders"].append(item)
+            elif isfile(item):
+                dict_to_return["files"].append(item)
+        return dict_to_return
 
     def enter(self, child):
         full_path = join(self.path, child)
-        if child in self.get_children() and isdir(full_path):
+        if child in listdir(self.path) and isdir(full_path):
             return Directory(full_path)
         raise Exception("Not a directory")
 
+    def __repr__(self):
+        return "<Directory " + self.path + ">"
+
     def __str__(self):
-        return "Directory(" + self.path + ")"
+        return "<Directory " + self.path + ">"
 
 
 
